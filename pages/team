@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Team | Megacore Integrated Services Ltd</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Poppins', 'sans-serif'] }, colors: { slate: { 900: '#0F172A' }, blue: { 600: '#2563EB' }, orange: { 500: '#F97316' } } } } }
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-slate-900 font-sans antialiased">
+
+    <main class="pt-32 pb-24" x-data="teamManager()">
+        <section class="px-6 lg:px-8 max-w-7xl mx-auto text-center space-y-4 mb-16">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-gray-200 bg-white shadow-sm">
+                <span class="text-[10px] tracking-wider font-heading font-bold uppercase text-blue-600">Executive & Engineering Core</span>
+            </div>
+            <h1 class="font-heading font-extrabold text-4xl md:text-5xl text-slate-900 tracking-tight">Meet Our Team</h1>
+            <p class="text-gray-600 text-sm leading-relaxed max-w-2xl mx-auto">The certified architects, engineers, and strategists powering integrated technical solutions across Nigeria.</p>
+        </section>
+
+        <section class="max-w-7xl mx-auto px-6 lg:px-8">
+            
+            <div x-show="isLoading" class="flex justify-center py-20">
+                <svg class="animate-spin h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" x-show="!isLoading" style="display: none;">
+                <template x-for="member in team" :key="member.id">
+                    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group">
+                        <div class="h-64 bg-slate-900 relative overflow-hidden flex items-center justify-center">
+                            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,#2563EB_0%,transparent_70%)] opacity-40 group-hover:scale-110 transition-transform duration-700"></div>
+                            
+                            <template x-if="!member.image_url">
+                                <span class="text-5xl font-heading font-bold text-white/50 uppercase tracking-widest" x-text="member.full_name.charAt(0)"></span>
+                            </template>
+                            <template x-if="member.image_url">
+                                <img :src="member.image_url" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
+                            </template>
+                        </div>
+                        
+                        <div class="p-6 text-center space-y-2">
+                            <h3 class="font-heading font-bold text-xl text-slate-900" x-text="member.full_name"></h3>
+                            <p class="text-orange-500 font-heading font-semibold text-xs uppercase tracking-wider" x-text="member.role"></p>
+                            <div class="w-10 h-1 bg-gray-200 mx-auto rounded-full my-3"></div>
+                            <p class="text-gray-500 text-xs leading-relaxed" x-text="member.bio"></p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const SUPABASE_URL = "https://gzrybqpaoakjmmaftqri.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6cnlicXBhb2Fram1tYWZ0cXJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NTI3MzYsImV4cCI6MjA5NzUyODczNn0.11nB7gouACiMPxUCKM3Hpgr78HDO6uB0BRrtDaBXD8U";
+        let supabaseClient = null;
+        if (window.supabase && SUPABASE_URL !== "https://gzrybqpaoakjmmaftqri.supabase.co") {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6cnlicXBhb2Fram1tYWZ0cXJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NTI3MzYsImV4cCI6MjA5NzUyODczNn0.11nB7gouACiMPxUCKM3Hpgr78HDO6uB0BRrtDaBXD8U);
+        }
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('teamManager', () => ({
+                team: [],
+                isLoading: true,
+                async init() {
+                    if(supabaseClient) {
+                        const { data, error } = await supabaseClient.from('team_members').select('*').order('display_order', { ascending: true });
+                        if(data) this.team = data;
+                    }
+                    this.isLoading = false;
+                }
+            }))
+        })
+    </script>
+</body>
+</html>
